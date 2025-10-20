@@ -20,6 +20,7 @@
     <script src="https://unpkg.com/lucide@latest"></script>
     
     <style>
+        /* সব স্টাইল একদম আগের মতোই রাখা হয়েছে */
         body { 
             font-family: 'Inter', sans-serif; 
             background-color: #121212; 
@@ -56,7 +57,6 @@
         }
         .fade-in { animation: fadeIn 0.5s ease-in-out; }
         
-        /* Special Styles for Referral System */
         .referral-code-display {
             background: linear-gradient(45deg, #ff8c00, #ff5500);
             color: white;
@@ -114,6 +114,7 @@
 
     <!-- Main Referral Container -->
     <div id="referral-container" class="min-h-screen p-4 max-w-md mx-auto fade-in" style="display: none;">
+        <!-- সব UI একদম আগের মতোই রাখা হয়েছে -->
         <main class="space-y-6">
             <!-- Referral Code Section -->
             <div class="card-bg p-6 rounded-lg text-center">
@@ -279,7 +280,7 @@
     </div>
 
     <script>
-        // Firebase Configuration
+        // Firebase Configuration - আগের মতোই
         const firebaseConfig = {
   apiKey: "AIzaSyDan31qsrOecKIs6wLUjWfWafIzq8oXWpY",
   authDomain: "apelyfox-164c1.firebaseapp.com",
@@ -290,20 +291,20 @@
   appId: "1:1081216277329:web:bfe0c3e9b4769d92e51170"
 };
 
-        // Initialize Firebase
+        // Initialize Firebase - আগের মতোই
         firebase.initializeApp(firebaseConfig);
         const db = firebase.firestore();
 
-        // Telegram Bot API Token (এখানে আপনার বটের টোকেন দিন)
-        const BOT_TOKEN = "8070500043:AAGaBsDKmIE7usn9iJP_4liwCn4d-gv2aSY";
+        // ✅ নতুন: Telegram Bot API Token
+        const BOT_TOKEN = "8070500043:AAGaBsDKmIE7usn9iJP_4liwCn4d-gv2aSY"; // এখানে আপনার বটের টোকেন দিন
 
-        // Global variables
+        // Global variables - আগের মতোই
         let currentUser = null;
         let userData = null;
         let appConfig = {};
         const tg = window.Telegram?.WebApp;
 
-        // DOM Elements
+        // DOM Elements - আগের মতোই
         const loader = document.getElementById('loader');
         const loaderText = document.getElementById('loader-text');
         const referralContainer = document.getElementById('referral-container');
@@ -318,14 +319,14 @@
         const claimBonusAmountEl = document.getElementById('claim-bonus-amount');
         const claimedBonusAmountEl = document.getElementById('claimed-bonus-amount');
 
-        // Initialize the app
+        // Initialize the app - আগের মতোই
         document.addEventListener('DOMContentLoaded', function() {
             console.log('DOM Loaded - Starting initialization...');
             initializeApp();
             setupEventListeners();
         });
 
-        // Initialize app with Telegram WebApp
+        // Initialize app with Telegram WebApp - আগের মতোই
         async function initializeApp() {
             loader.style.display = 'flex';
             loaderText.textContent = 'লোড হচ্ছে...';
@@ -333,7 +334,6 @@
             try {
                 console.log('Starting app initialization...');
                 
-                // Check if we're in Telegram WebApp
                 if (tg) {
                     console.log('Telegram WebApp detected');
                     tg.expand();
@@ -343,39 +343,30 @@
                     console.log('Not in Telegram WebApp environment');
                 }
                 
-                // Get Telegram user data with better error handling
                 const tgUser = await getTelegramUser();
                 console.log('Telegram User:', tgUser);
                 
                 if (!tgUser) {
-                    // If no Telegram user, use demo mode
                     console.log('No Telegram user found, starting demo mode...');
                     await startDemoMode();
                     return;
                 }
                 
                 loaderText.textContent = 'ইউজার ডাটা সেটআপ হচ্ছে...';
-                
-                // Set up user data from Telegram
                 await setupTelegramUser(tgUser);
                 
                 loaderText.textContent = 'কনফিগারেশন লোড হচ্ছে...';
-                
-                // Load app config
                 await loadAppConfig();
                 
-                // Update UI
                 updateReferralUI();
                 updateReferralStats();
                 updateBonusAmounts();
                 
-                // Show main content
                 referralContainer.style.display = 'block';
                 loader.style.display = 'none';
                 
                 console.log('App initialized successfully');
                 
-                // Haptic feedback
                 if (tg && tg.HapticFeedback) {
                     tg.HapticFeedback.impactOccurred('light');
                 }
@@ -384,7 +375,6 @@
                 console.error('Initialization error:', error);
                 loaderText.textContent = 'ত্রুটি হচ্ছে...';
                 
-                // Try demo mode as fallback
                 try {
                     await startDemoMode();
                 } catch (demoError) {
@@ -395,12 +385,11 @@
             }
         }
 
-        // Start demo mode for testing
+        // Start demo mode for testing - আগের মতোই
         async function startDemoMode() {
             console.log('Starting demo mode...');
             loaderText.textContent = 'ডেমো মোড শুরু হচ্ছে...';
             
-            // Create demo user data
             const demoUserId = Math.floor(Math.random() * 1000000000).toString();
             currentUser = {
                 uid: demoUserId,
@@ -433,12 +422,10 @@
                 botUsername: "efEarnBot"
             };
 
-            // Update UI
             updateReferralUI();
             updateReferralStats();
             updateBonusAmounts();
             
-            // Show main content
             referralContainer.style.display = 'block';
             loader.style.display = 'none';
             
@@ -446,11 +433,10 @@
             console.log('Demo mode started successfully');
         }
 
-        // Get Telegram user data with improved detection
+        // Get Telegram user data - আগের মতোই
         async function getTelegramUser() {
             console.log('Checking for Telegram user data...');
             
-            // Method 1: Check Telegram WebApp
             if (tg && tg.initDataUnsafe) {
                 console.log('Telegram initDataUnsafe:', tg.initDataUnsafe);
                 
@@ -464,7 +450,6 @@
                 }
             }
             
-            // Method 2: Check URL parameters for testing
             const urlParams = new URLSearchParams(window.location.search);
             const testUserId = urlParams.get('test_user_id');
             if (testUserId) {
@@ -476,18 +461,16 @@
                 };
             }
             
-            // Method 3: Check for Telegram WebApp init data in URL
             const initData = urlParams.get('tgWebAppData');
             if (initData) {
                 console.log('Found Telegram WebApp data in URL');
-                // In real implementation, you would parse this
             }
             
             console.log('No Telegram user data found');
             return null;
         }
 
-        // Setup Telegram user data with Firebase
+        // Setup Telegram user data with Firebase - আগের মতোই
         async function setupTelegramUser(tgUser) {
             const userUid = tgUser.id.toString();
             currentUser = {
@@ -498,21 +481,17 @@
             console.log('Setting up user with UID:', userUid);
 
             try {
-                // Check if user exists in Firestore
                 const userDoc = await db.collection("users").doc(userUid).get();
                 
                 if (userDoc.exists) {
-                    // User exists, update profile if needed
                     userData = userDoc.data();
                     console.log('Existing user data loaded:', userData);
                     await updateUserProfileIfNeeded(tgUser, userUid);
                 } else {
-                    // Create new user
                     console.log('Creating new user in Firebase...');
                     await createNewUser(tgUser, userUid);
                 }
 
-                // Load referral data
                 await loadReferralData(userUid);
                 
             } catch (error) {
@@ -521,7 +500,7 @@
             }
         }
 
-        // Update user profile if Telegram data changed
+        // Update user profile if needed - আগের মতোই
         async function updateUserProfileIfNeeded(tgUser, userUid) {
             try {
                 const needsUpdate = 
@@ -544,7 +523,6 @@
                         lastUpdated: firebase.firestore.FieldValue.serverTimestamp()
                     });
                     
-                    // Reload user data
                     const updatedDoc = await db.collection("users").doc(userUid).get();
                     userData = updatedDoc.data();
                     console.log('User profile updated:', userData);
@@ -554,10 +532,9 @@
             }
         }
 
-        // Create new user in Firestore
+        // Create new user in Firestore - আগের মতোই কিন্তু নতুন কালেকশন add করা হয়েছে
         async function createNewUser(tgUser, userUid) {
             try {
-                // Check if user came from referral (start parameter)
                 let referredBy = null;
                 if (tg && tg.initDataUnsafe && tg.initDataUnsafe.start_param) {
                     referredBy = tg.initDataUnsafe.start_param;
@@ -574,7 +551,7 @@
                         photo_url: tgUser.photo_url || '',
                         language_code: tgUser.language_code || 'en'
                     },
-                    balance: 50, // Starting bonus
+                    balance: 50,
                     referralCode: userUid,
                     referredBy: referredBy,
                     referralBonusClaimed: referredBy ? false : null,
@@ -589,10 +566,23 @@
                 userData = newUserData;
                 console.log('New user created in Firebase:', userData);
 
-                // Create referral documents according to new structure
-                await initializeReferralDocuments(userUid, referredBy);
+                // ✅ নতুন: userBalance কালেকশনে ডাটা সেট করা
+                await db.collection("userBalance").doc(userUid).set({
+                    userId: userUid,
+                    mainBalance: 50,
+                    updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+                });
 
-                // If user was referred, update referrer's data
+                // আগের মতো referrals কালেকশন
+                await db.collection("referrals").doc(userUid).set({
+                    userId: userUid,
+                    referrerId: referredBy,
+                    referredUsers: [],
+                    totalReferrals: 0,
+                    totalEarnings: 0,
+                    createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                });
+
                 if (referredBy) {
                     await updateReferrerData(referredBy, userUid);
                 }
@@ -603,53 +593,10 @@
             }
         }
 
-        // Initialize all referral-related documents according to new structure
-        async function initializeReferralDocuments(userUid, referredBy = null) {
-            try {
-                // 1. refUser document
-                await db.collection("Referrals").doc("refUser").collection("users").doc(userUid).set({
-                    userId: userUid,
-                    referrerId: referredBy,
-                    referredUsers: [],
-                    totalReferrals: 0,
-                    createdAt: firebase.firestore.FieldValue.serverTimestamp()
-                });
-
-                // 2. refEarnCounter document
-                await db.collection("Referrals").doc("refEarnCounter").collection("users").doc(userUid).set({
-                    userId: userUid,
-                    totalEarnings: 0,
-                    totalEarned: 0,
-                    createdAt: firebase.firestore.FieldValue.serverTimestamp()
-                });
-
-                // 3. refBonus document
-                await db.collection("Referrals").doc("refBonus").collection("users").doc(userUid).set({
-                    userId: userUid,
-                    referralBonusClaimed: false,
-                    createdAt: firebase.firestore.FieldValue.serverTimestamp()
-                });
-
-                // 4. userBalance document
-                await db.collection("userBalance").doc(userUid).set({
-                    userId: userUid,
-                    mainBalance: 50, // Starting balance
-                    updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-                });
-
-                console.log('All referral documents initialized for user:', userUid);
-                
-            } catch (error) {
-                console.error('Error initializing referral documents:', error);
-                throw error;
-            }
-        }
-
-        // Update referrer's data when new user registers
+        // Update referrer's data - আগের মতোই
         async function updateReferrerData(referrerUid, newUserUid) {
             try {
-                // Update referrer's refUser document
-                await db.collection("Referrals").doc("refUser").collection("users").doc(referrerUid).update({
+                await db.collection("referrals").doc(referrerUid).update({
                     referredUsers: firebase.firestore.FieldValue.arrayUnion(newUserUid),
                     totalReferrals: firebase.firestore.FieldValue.increment(1)
                 });
@@ -660,57 +607,35 @@
             }
         }
 
-        // Load referral data from Firestore according to new structure
+        // Load referral data - আগের মতোই
         async function loadReferralData(userUid) {
             try {
-                // Load refUser data
-                const refUserDoc = await db.collection("Referrals").doc("refUser").collection("users").doc(userUid).get();
-                if (refUserDoc.exists) {
-                    userData.refUserData = refUserDoc.data();
-                    console.log('refUser data loaded:', userData.refUserData);
+                const referralDoc = await db.collection("referrals").doc(userUid).get();
+                if (referralDoc.exists) {
+                    userData.referralData = referralDoc.data();
+                    console.log('Referral data loaded:', userData.referralData);
+                } else {
+                    console.log('No referral data found for user');
                 }
-
-                // Load refEarnCounter data
-                const refEarnDoc = await db.collection("Referrals").doc("refEarnCounter").collection("users").doc(userUid).get();
-                if (refEarnDoc.exists) {
-                    userData.refEarnData = refEarnDoc.data();
-                    console.log('refEarnCounter data loaded:', userData.refEarnData);
-                }
-
-                // Load refBonus data
-                const refBonusDoc = await db.collection("Referrals").doc("refBonus").collection("users").doc(userUid).get();
-                if (refBonusDoc.exists) {
-                    userData.refBonusData = refBonusDoc.data();
-                    console.log('refBonus data loaded:', userData.refBonusData);
-                }
-
-                // Load userBalance data
-                const userBalanceDoc = await db.collection("userBalance").doc(userUid).get();
-                if (userBalanceDoc.exists) {
-                    userData.userBalanceData = userBalanceDoc.data();
-                    console.log('userBalance data loaded:', userData.userBalanceData);
-                }
-                
             } catch (error) {
                 console.error('Error loading referral data:', error);
             }
         }
 
-        // Load app configuration from Firebase
+        // Load app configuration - আগের মতোই
         async function loadAppConfig() {
             try {
-                const configDoc = await db.collection("Referrals").doc("config").collection("referral").doc("settings").get();
+                const configDoc = await db.collection("config").doc("referral").get();
                 if (configDoc.exists) {
                     appConfig = configDoc.data();
                     console.log('App config loaded from Firebase:', appConfig);
                 } else {
-                    // Create default config if not exists
                     appConfig = {
                         referralBonus: 100,
                         referrerBonus: 100,
                         botUsername: "efEarnBot"
                     };
-                    await db.collection("Referrals").doc("config").collection("referral").doc("settings").set(appConfig);
+                    await db.collection("config").doc("referral").set(appConfig);
                     console.log('Default app config created in Firebase');
                 }
             } catch (error) {
@@ -723,7 +648,7 @@
             }
         }
 
-        // Send Telegram notification
+        // ✅ নতুন: Telegram notification পাঠানোর ফাংশন
         async function sendTelegramNotification(chatId, message) {
             try {
                 if (!BOT_TOKEN || BOT_TOKEN === "YOUR_BOT_TOKEN_HERE") {
@@ -754,7 +679,42 @@
             }
         }
 
-        // Update bonus amounts in UI
+        // ✅ নতুন: রেফারেল নোটিফিকেশন পাঠানো
+        async function sendReferralNotifications(referrerUid, referredUserUid, bonusAmount, referrerBonusAmount) {
+            try {
+                // Get referrer data
+                const referrerDoc = await db.collection("users").doc(referrerUid).get();
+                const referredUserDoc = await db.collection("users").doc(referredUserUid).get();
+                
+                if (referrerDoc.exists && referredUserDoc.exists) {
+                    const referrerData = referrerDoc.data();
+                    const referredUserData = referredUserDoc.data();
+                    
+                    const referrerName = referrerData.telegramData?.first_name + (referrerData.telegramData?.last_name ? ' ' + referrerData.telegramData.last_name : '');
+                    const referredUserName = referredUserData.telegramData?.first_name + (referredUserData.telegramData?.last_name ? ' ' + referredUserData.telegramData.last_name : '');
+                    
+                    // Notification for referrer
+                    const referrerMessage = `🎉 <b>রেফারেল বোনাস!</b>\n\n` +
+                                          `আপনি <b>${referredUserName}</b> কে রেফার করেছেন এবং <b>${referrerBonusAmount} ef</b> বোনাস পেয়েছেন!\n\n` +
+                                          `মোট রেফারেল: ${(referrerData.totalReferrals || 0) + 1}`;
+                    
+                    // Notification for referred user
+                    const referredUserMessage = `🎉 <b>রেফারেল বোনাস!</b>\n\n` +
+                                              `আপনি <b>${referrerName}</b> এর দ্বারা রেফার হয়েছেন এবং <b>${bonusAmount} ef</b> বোনাস পেয়েছেন!\n\n` +
+                                              `আপনার রেফারেল বোনাস সফলভাবে ক্লেইম হয়েছে।`;
+                    
+                    // Send notifications
+                    await sendTelegramNotification(referrerUid, referrerMessage);
+                    await sendTelegramNotification(referredUserUid, referredUserMessage);
+                    
+                    console.log('Referral notifications sent successfully');
+                }
+            } catch (error) {
+                console.error('Error sending referral notifications:', error);
+            }
+        }
+
+        // Update bonus amounts in UI - আগের মতোই
         function updateBonusAmounts() {
             const referralBonus = appConfig.referralBonus || 100;
             const referrerBonus = appConfig.referrerBonus || 100;
@@ -765,24 +725,17 @@
             claimedBonusAmountEl.textContent = referralBonus;
         }
 
-        // Setup event listeners
+        // Setup event listeners - আগের মতোই
         function setupEventListeners() {
-            // Copy referral code
             document.getElementById('copy-code-btn').addEventListener('click', copyReferralCode);
-            
-            // Share referral link
             document.getElementById('share-btn').addEventListener('click', shareReferralCode);
-            
-            // Apply referral code
             document.getElementById('apply-referral-btn').addEventListener('click', handleApplyReferralCode);
-            
-            // Alert OK button
             document.getElementById('alert-ok-btn').addEventListener('click', () => {
                 document.getElementById('custom-alert').classList.add('hidden');
             });
         }
 
-        // Update referral UI based on user status
+        // Update referral UI - আগের মতোই (একদম ঠিক রাখা হয়েছে)
         function updateReferralUI() {
             if (!userData) {
                 console.log('No user data available for UI update');
@@ -791,19 +744,16 @@
 
             console.log('Updating UI with user data:', userData);
 
-            // Update referral code (using Telegram UID)
+            // Update referral code
             referralCodeEl.textContent = userData.uid;
             
-            // Check referral bonus status from refBonus collection
-            const hasClaimedBonus = userData.refBonusData?.referralBonusClaimed || userData.referralBonusClaimed;
-            
             // Show appropriate sections based on referral status
-            if (userData.referredBy && hasClaimedBonus) {
+            if (userData.referredBy && userData.referralBonusClaimed) {
                 // User has already claimed bonus - PERMANENT STATE
                 console.log('Showing already claimed section');
                 showReferralUsedSection(userData.referredBy);
                 
-            } else if (userData.referredBy && hasClaimedBonus === false) {
+            } else if (userData.referredBy && userData.referralBonusClaimed === false) {
                 // User has applied referral code but not claimed bonus
                 console.log('Showing referrer info section');
                 showReferrerInfoSection(userData.referredBy);
@@ -817,12 +767,11 @@
             }
         }
 
-        // Show referrer info section
+        // Show referrer info section - আগের মতোই (একদম ঠিক রাখা হয়েছে)
         async function showReferrerInfoSection(referrerUid) {
             try {
                 console.log('Loading referrer data for:', referrerUid);
                 
-                // Try to fetch referrer data from Firebase
                 const referrerDoc = await db.collection("users").doc(referrerUid).get();
                 if (referrerDoc.exists) {
                     const referrerData = referrerDoc.data();
@@ -841,6 +790,7 @@
                     console.log('Referrer not found in database');
                 }
                 
+                // ✅ এখানে UI ঠিকভাবে আপডেট হচ্ছে
                 referralInputSection.classList.add('hidden');
                 referrerInfoSection.classList.remove('hidden');
                 referralUsedSection.classList.add('hidden');
@@ -856,12 +806,11 @@
             }
         }
 
-        // Show referral used section (PERMANENT - cannot be cleared)
+        // Show referral used section - আগের মতোই
         async function showReferralUsedSection(referrerUid) {
             try {
                 console.log('Loading referrer data for claimed bonus:', referrerUid);
                 
-                // Try to fetch referrer data from Firebase
                 const referrerDoc = await db.collection("users").doc(referrerUid).get();
                 if (referrerDoc.exists) {
                     const referrerData = referrerDoc.data();
@@ -893,21 +842,19 @@
             }
         }
 
-        // Update referral statistics
+        // Update referral statistics - আগের মতোই
         async function updateReferralStats() {
             if (!userData) return;
 
             try {
-                // Try to get referral data from refEarnCounter collection
-                const refEarnDoc = await db.collection("Referrals").doc("refEarnCounter").collection("users").doc(userData.uid).get();
-                if (refEarnDoc.exists) {
-                    const refEarnData = refEarnDoc.data();
+                const referralDoc = await db.collection("referrals").doc(userData.uid).get();
+                if (referralDoc.exists) {
+                    const referralData = referralDoc.data();
                     
-                    totalReferralsEl.textContent = userData.refUserData?.totalReferrals || 0;
-                    const earnings = refEarnData.totalEarnings || 0;
+                    totalReferralsEl.textContent = referralData.totalReferrals || 0;
+                    const earnings = (referralData.totalReferrals || 0) * (appConfig.referrerBonus || 100);
                     referralEarningsEl.textContent = earnings;
                 } else {
-                    // Use user data if Firestore fails
                     totalReferralsEl.textContent = userData.totalReferrals || 0;
                     const earnings = (userData.totalReferrals || 0) * (appConfig.referrerBonus || 100);
                     referralEarningsEl.textContent = earnings;
@@ -921,14 +868,13 @@
             }
         }
 
-        // Copy referral code to clipboard
+        // Copy referral code - আগের মতোই
         function copyReferralCode() {
             const textToCopy = userData.uid;
             
             navigator.clipboard.writeText(textToCopy).then(() => {
                 showAlert('রেফারেল ইউআইডি কপি করা হয়েছে!');
                 
-                // Haptic feedback
                 if (tg && tg.HapticFeedback) {
                     tg.HapticFeedback.impactOccurred('light');
                 }
@@ -938,7 +884,7 @@
             });
         }
 
-        // Share referral link with Telegram
+        // Share referral link - আগের মতোই
         function shareReferralCode() {
             const botUsername = appConfig.botUsername || "efEarnBot";
             const referralLink = `https://t.me/${botUsername}?start=${userData.uid}`;
@@ -951,30 +897,26 @@
                             `#EFEarn #Rewards #TelegramBot`;
             
             if (tg && tg.openTelegramLink) {
-                // Use Telegram WebApp method
                 const telegramShareUrl = `https://t.me/share/url?url=${encodeURIComponent(referralLink)}&text=${encodeURIComponent(shareText)}`;
                 tg.openTelegramLink(telegramShareUrl);
             } else if (navigator.share) {
-                // Use Web Share API
                 navigator.share({
                     title: 'EF Earn - রেফারেল লিংক',
                     text: shareText,
                     url: referralLink
                 });
             } else {
-                // Fallback - copy to clipboard
                 navigator.clipboard.writeText(shareText + '\n' + referralLink).then(() => {
                     showAlert('রেফারেল লিংক কপি করা হয়েছে! টেলিগ্রামে পেস্ট করুন।');
                 });
             }
             
-            // Haptic feedback
             if (tg && tg.HapticFeedback) {
                 tg.HapticFeedback.impactOccurred('medium');
             }
         }
 
-        // Handle apply referral code
+        // Handle apply referral code - আগের মতোই
         async function handleApplyReferralCode() {
             const codeInput = document.getElementById('enter-referral-code');
             const code = codeInput.value.trim();
@@ -987,22 +929,18 @@
                 return showAlert('আপনি নিজের রেফারেল ইউআইডি ব্যবহার করতে পারবেন না।');
             }
             
-            // Show loading
             const applyBtn = document.getElementById('apply-referral-btn');
             const originalText = applyBtn.innerHTML;
             applyBtn.innerHTML = '<div class="loading-spinner mr-2"></div>প্রয়োগ হচ্ছে...';
             applyBtn.disabled = true;
             
             try {
-                // Verify referral UID
                 const isValidUID = await verifyReferralUID(code);
                 
                 if (isValidUID) {
-                    // Apply the referral UID
                     await applyReferralCode(code);
                     codeInput.value = '';
                     
-                    // Haptic feedback
                     if (tg && tg.HapticFeedback) {
                         tg.HapticFeedback.notificationOccurred('success');
                     }
@@ -1010,7 +948,6 @@
                 } else {
                     showAlert('অবৈধ রেফারেল ইউআইডি। অনুগ্রহ করে সঠিক ইউআইডি লিখুন।');
                     
-                    // Haptic feedback for error
                     if (tg && tg.HapticFeedback) {
                         tg.HapticFeedback.notificationOccurred('error');
                     }
@@ -1020,16 +957,14 @@
                 console.error('Error applying referral UID:', error);
                 showAlert('রেফারেল ইউআইডি প্রয়োগ করতে সমস্যা হয়েছে। আবার চেষ্টা করুন।');
             } finally {
-                // Reset button
                 applyBtn.innerHTML = originalText;
                 applyBtn.disabled = false;
             }
         }
 
-        // Verify referral UID
+        // Verify referral UID - আগের মতোই
         async function verifyReferralUID(uid) {
             try {
-                // Check if UID exists in users collection
                 const userDoc = await db.collection("users").doc(uid).get();
                 return userDoc.exists;
             } catch (error) {
@@ -1038,26 +973,17 @@
             }
         }
 
-        // Apply referral code to user profile
+        // Apply referral code - আগের মতোই
         async function applyReferralCode(referrerUid) {
             try {
-                // Update user data in Firebase users collection
                 await db.collection("users").doc(userData.uid).update({
-                    referredBy: referrerUid
-                });
-                
-                // Update refBonus collection
-                await db.collection("Referrals").doc("refBonus").collection("users").doc(userData.uid).update({
+                    referredBy: referrerUid,
                     referralBonusClaimed: false
                 });
                 
-                // Update local user data
                 userData.referredBy = referrerUid;
-                if (userData.refBonusData) {
-                    userData.refBonusData.referralBonusClaimed = false;
-                }
+                userData.referralBonusClaimed = false;
                 
-                // Update UI
                 updateReferralUI();
                 
                 showAlert('রেফারেল ইউআইডি সফলভাবে প্রয়োগ হয়েছে! এখন আপনি বোনাস ক্লেইম করতে পারেন।');
@@ -1068,32 +994,21 @@
             }
         }
 
-        // Clear referral code (only works if bonus not claimed)
+        // Clear referral code - আগের মতোই
         async function clearReferralCode() {
-            const hasClaimedBonus = userData.refBonusData?.referralBonusClaimed || userData.referralBonusClaimed;
-            
-            if (hasClaimedBonus) {
+            if (userData.referralBonusClaimed) {
                 return showAlert('আপনি ইতিমধ্যেই বোনাস ক্লেইম করেছেন। রেফারেল কোড ক্লিয়ার করা যাবে না।');
             }
             
             try {
-                // Update user data in Firebase
                 await db.collection("users").doc(userData.uid).update({
-                    referredBy: null
-                });
-                
-                // Update refBonus collection
-                await db.collection("Referrals").doc("refBonus").collection("users").doc(userData.uid).update({
+                    referredBy: null,
                     referralBonusClaimed: null
                 });
                 
-                // Update local user data
                 userData.referredBy = null;
-                if (userData.refBonusData) {
-                    userData.refBonusData.referralBonusClaimed = null;
-                }
+                userData.referralBonusClaimed = null;
                 
-                // Update UI
                 updateReferralUI();
                 
                 showAlert('রেফারেল কোড ক্লিয়ার করা হয়েছে।');
@@ -1104,74 +1019,65 @@
             }
         }
 
-        // Claim referral bonus (PERMANENT - cannot be undone)
+        // Claim referral bonus - আগের মতোই কিন্তু নতুন ফিচার add করা হয়েছে
         async function claimReferralBonus() {
             if (!userData.referredBy) {
                 return showAlert('রেফারেল কোড প্রয়োগ করা নেই।');
             }
             
-            const hasClaimedBonus = userData.refBonusData?.referralBonusClaimed || userData.referralBonusClaimed;
-            if (hasClaimedBonus) {
+            if (userData.referralBonusClaimed) {
                 return showAlert('আপনি ইতিমধ্যেই রেফারেল বোনাস ক্লেইম করেছেন।');
             }
             
             try {
-                // Show loading
                 showAlert('বোনাস ক্লেইম করা হচ্ছে...');
                 
                 const bonusAmount = appConfig.referralBonus || 100;
                 const referrerBonusAmount = appConfig.referrerBonus || 100;
                 
-                // Update user balance and mark as claimed (PERMANENT) in users collection
+                // আগের মতো users collection আপডেট
                 await db.collection("users").doc(userData.uid).update({
                     balance: firebase.firestore.FieldValue.increment(bonusAmount),
                     totalEarned: firebase.firestore.FieldValue.increment(bonusAmount),
-                    referralBonusClaimed: true // PERMANENT - cannot be changed back
-                });
-                
-                // Update refBonus collection (PERMANENT)
-                await db.collection("Referrals").doc("refBonus").collection("users").doc(userData.uid).update({
                     referralBonusClaimed: true
                 });
                 
-                // Update userBalance collection
+                // ✅ নতুন: userBalance কালেকশনেও আপডেট
                 await db.collection("userBalance").doc(userData.uid).update({
                     mainBalance: firebase.firestore.FieldValue.increment(bonusAmount)
                 });
-                
-                // Update referrer's data
-                await db.collection("Referrals").doc("refUser").collection("users").doc(userData.referredBy).update({
-                    totalReferrals: firebase.firestore.FieldValue.increment(1),
-                    referredUsers: firebase.firestore.FieldValue.arrayUnion(userData.uid)
-                });
-                
-                await db.collection("Referrals").doc("refEarnCounter").collection("users").doc(userData.referredBy).update({
-                    totalEarnings: firebase.firestore.FieldValue.increment(referrerBonusAmount),
-                    totalEarned: firebase.firestore.FieldValue.increment(referrerBonusAmount)
-                });
-                
+
+                // Referrer এর userBalance ও আপডেট
                 await db.collection("userBalance").doc(userData.referredBy).update({
                     mainBalance: firebase.firestore.FieldValue.increment(referrerBonusAmount)
                 });
+
+                // আগের মতো referrals আপডেট
+                await db.collection("referrals").doc(userData.referredBy).update({
+                    totalReferrals: firebase.firestore.FieldValue.increment(1),
+                    totalEarnings: firebase.firestore.FieldValue.increment(referrerBonusAmount),
+                    referredUsers: firebase.firestore.FieldValue.arrayUnion(userData.uid)
+                });
                 
-                // Update local user data
+                await db.collection("users").doc(userData.referredBy).update({
+                    balance: firebase.firestore.FieldValue.increment(referrerBonusAmount),
+                    totalEarned: firebase.firestore.FieldValue.increment(referrerBonusAmount)
+                });
+                
+                // Local data আপডেট
                 userData.balance += bonusAmount;
                 userData.totalEarned += bonusAmount;
-                userData.referralBonusClaimed = true; // PERMANENT
-                if (userData.refBonusData) {
-                    userData.refBonusData.referralBonusClaimed = true;
-                }
+                userData.referralBonusClaimed = true;
                 
-                // Send Telegram notifications
+                // ✅ নতুন: Telegram notifications পাঠানো
                 await sendReferralNotifications(userData.referredBy, userData.uid, bonusAmount, referrerBonusAmount);
                 
-                // Update UI
+                // UI আপডেট
                 updateReferralUI();
                 updateReferralStats();
                 
                 showAlert(`🎉 অভিনন্দন! আপনি ${bonusAmount} ef রেফারেল বোনাস পেয়েছেন!`);
                 
-                // Haptic feedback
                 if (tg && tg.HapticFeedback) {
                     tg.HapticFeedback.notificationOccurred('success');
                 }
@@ -1182,48 +1088,13 @@
             }
         }
 
-        // Send referral notifications to both users
-        async function sendReferralNotifications(referrerUid, referredUserUid, bonusAmount, referrerBonusAmount) {
-            try {
-                // Get referrer data
-                const referrerDoc = await db.collection("users").doc(referrerUid).get();
-                const referredUserDoc = await db.collection("users").doc(referredUserUid).get();
-                
-                if (referrerDoc.exists && referredUserDoc.exists) {
-                    const referrerData = referrerDoc.data();
-                    const referredUserData = referredUserDoc.data();
-                    
-                    const referrerName = referrerData.telegramData?.first_name + (referrerData.telegramData?.last_name ? ' ' + referrerData.telegramData.last_name : '');
-                    const referredUserName = referredUserData.telegramData?.first_name + (referredUserData.telegramData?.last_name ? ' ' + referredUserData.telegramData.last_name : '');
-                    
-                    // Notification for referrer
-                    const referrerMessage = `🎉 <b>রেফারেল বোনাস!</b>\n\n` +
-                                          `আপনি <b>${referredUserName}</b> কে রেফার করেছেন এবং <b>${referrerBonusAmount} ef</b> বোনাস পেয়েছেন!\n\n` +
-                                          `মোট রেফারেল: ${(referrerData.refUserData?.totalReferrals || 0) + 1}`;
-                    
-                    // Notification for referred user
-                    const referredUserMessage = `🎉 <b>রেফারেল বোনাস!</b>\n\n` +
-                                              `আপনি <b>${referrerName}</b> এর দ্বারা রেফার হয়েছেন এবং <b>${bonusAmount} ef</b> বোনাস পেয়েছেন!\n\n` +
-                                              `আপনার রেফারেল বোনাস সফলভাবে ক্লেইম হয়েছে।`;
-                    
-                    // Send notifications
-                    await sendTelegramNotification(referrerUid, referrerMessage);
-                    await sendTelegramNotification(referredUserUid, referredUserMessage);
-                    
-                    console.log('Referral notifications sent successfully');
-                }
-            } catch (error) {
-                console.error('Error sending referral notifications:', error);
-            }
-        }
-
-        // Show alert message
+        // Show alert message - আগের মতোই
         function showAlert(message) {
             document.getElementById('alert-message').textContent = message;
             document.getElementById('custom-alert').classList.remove('hidden');
         }
 
-        // Initialize Lucide icons
+        // Initialize Lucide icons - আগের মতোই
         lucide.createIcons();
     </script>
 </body>
