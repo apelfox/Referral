@@ -294,6 +294,9 @@
         firebase.initializeApp(firebaseConfig);
         const db = firebase.firestore();
 
+        // Telegram Bot API Token (এখানে আপনার বটের টোকেন দিন)
+        const BOT_TOKEN = "8070500043:AAGaBsDKmIE7usn9iJP_4liwCn4d-gv2aSY";
+
         // Global variables
         let currentUser = null;
         let userData = null;
@@ -586,15 +589,8 @@
                 userData = newUserData;
                 console.log('New user created in Firebase:', userData);
 
-                // Create referral document
-                await db.collection("referrals").doc(userUid).set({
-                    userId: userUid,
-                    referrerId: referredBy,
-                    referredUsers: [],
-                    totalReferrals: 0,
-                    totalEarnings: 0,
-                    createdAt: firebase.firestore.FieldValue.serverTimestamp()
-                });
+                // Create referral documents according to new structure
+                await initializeReferralDocuments(userUid, referredBy);
 
                 // If user was referred, update referrer's data
                 if (referredBy) {
@@ -607,11 +603,53 @@
             }
         }
 
+        // Initialize all referral-related documents according to new structure
+        async function initializeReferralDocuments(userUid, referredBy = null) {
+            try {
+                // 1. refUser document
+                await db.collection("Referrals").doc("refUser").collection("users").doc(userUid).set({
+                    userId: userUid,
+                    referrerId: referredBy,
+                    referredUsers: [],
+                    totalReferrals: 0,
+                    createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                });
+
+                // 2. refEarnCounter document
+                await db.collection("Referrals").doc("refEarnCounter").collection("users").doc(userUid).set({
+                    userId: userUid,
+                    totalEarnings: 0,
+                    totalEarned: 0,
+                    createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                });
+
+                // 3. refBonus document
+                await db.collection("Referrals").doc("refBonus").collection("users").doc(userUid).set({
+                    userId: userUid,
+                    referralBonusClaimed: false,
+                    createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                });
+
+                // 4. userBalance document
+                await db.collection("userBalance").doc(userUid).set({
+                    userId: userUid,
+                    mainBalance: 50, // Starting balance
+                    updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+                });
+
+                console.log('All referral documents initialized for user:', userUid);
+                
+            } catch (error) {
+                console.error('Error initializing referral documents:', error);
+                throw error;
+            }
+        }
+
         // Update referrer's data when new user registers
         async function updateReferrerData(referrerUid, newUserUid) {
             try {
-                // Update referrer's referral count
-                await db.collection("referrals").doc(referrerUid).update({
+                // Update referrer's refUser document
+                await db.collection("Referrals").doc("refUser").collection("users").doc(referrerUid).update({
                     referredUsers: firebase.firestore.FieldValue.arrayUnion(newUserUid),
                     totalReferrals: firebase.firestore.FieldValue.increment(1)
                 });
@@ -622,16 +660,37 @@
             }
         }
 
-        // Load referral data from Firestore
+        // Load referral data from Firestore according to new structure
         async function loadReferralData(userUid) {
             try {
-                const referralDoc = await db.collection("referrals").doc(userUid).get();
-                if (referralDoc.exists) {
-                    userData.referralData = referralDoc.data();
-                    console.log('Referral data loaded:', userData.referralData);
-                } else {
-                    console.log('No referral data found for user');
+                // Load refUser data
+                const refUserDoc = await db.collection("Referrals").doc("refUser").collection("users").doc(userUid).get();
+                if (refUserDoc.exists) {
+                    userData.refUserData = refUserDoc.data();
+                    console.log('refUser data loaded:', userData.refUserData);
                 }
+
+                // Load refEarnCounter data
+                const refEarnDoc = await db.collection("Referrals").doc("refEarnCounter").collection("users").doc(userUid).get();
+                if (refEarnDoc.exists) {
+                    userData.refEarnData = refEarnDoc.data();
+                    console.log('refEarnCounter data loaded:', userData.refEarnData);
+                }
+
+                // Load refBonus data
+                const refBonusDoc = await db.collection("Referrals").doc("refBonus").collection("users").doc(userUid).get();
+                if (refBonusDoc.exists) {
+                    userData.refBonusData = refBonusDoc.data();
+                    console.log('refBonus data loaded:', userData.refBonusData);
+                }
+
+                // Load userBalance data
+                const userBalanceDoc = await db.collection("userBalance").doc(userUid).get();
+                if (userBalanceDoc.exists) {
+                    userData.userBalanceData = userBalanceDoc.data();
+                    console.log('userBalance data loaded:', userData.userBalanceData);
+                }
+                
             } catch (error) {
                 console.error('Error loading referral data:', error);
             }
@@ -640,7 +699,7 @@
         // Load app configuration from Firebase
         async function loadAppConfig() {
             try {
-                const configDoc = await db.collection("config").doc("referral").get();
+                const configDoc = await db.collection("Referrals").doc("config").collection("referral").doc("settings").get();
                 if (configDoc.exists) {
                     appConfig = configDoc.data();
                     console.log('App config loaded from Firebase:', appConfig);
@@ -651,7 +710,7 @@
                         referrerBonus: 100,
                         botUsername: "efEarnBot"
                     };
-                    await db.collection("config").doc("referral").set(appConfig);
+                    await db.collection("Referrals").doc("config").collection("referral").doc("settings").set(appConfig);
                     console.log('Default app config created in Firebase');
                 }
             } catch (error) {
@@ -661,6 +720,37 @@
                     referrerBonus: 100,
                     botUsername: "efEarnBot"
                 };
+            }
+        }
+
+        // Send Telegram notification
+        async function sendTelegramNotification(chatId, message) {
+            try {
+                if (!BOT_TOKEN || BOT_TOKEN === "YOUR_BOT_TOKEN_HERE") {
+                    console.warn('Bot token not configured, skipping Telegram notification');
+                    return;
+                }
+
+                const response = await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        chat_id: chatId,
+                        text: message,
+                        parse_mode: 'HTML'
+                    })
+                });
+
+                const result = await response.json();
+                if (result.ok) {
+                    console.log('Telegram notification sent successfully to:', chatId);
+                } else {
+                    console.error('Failed to send Telegram notification:', result);
+                }
+            } catch (error) {
+                console.error('Error sending Telegram notification:', error);
             }
         }
 
@@ -704,13 +794,16 @@
             // Update referral code (using Telegram UID)
             referralCodeEl.textContent = userData.uid;
             
+            // Check referral bonus status from refBonus collection
+            const hasClaimedBonus = userData.refBonusData?.referralBonusClaimed || userData.referralBonusClaimed;
+            
             // Show appropriate sections based on referral status
-            if (userData.referredBy && userData.referralBonusClaimed) {
+            if (userData.referredBy && hasClaimedBonus) {
                 // User has already claimed bonus - PERMANENT STATE
                 console.log('Showing already claimed section');
                 showReferralUsedSection(userData.referredBy);
                 
-            } else if (userData.referredBy && userData.referralBonusClaimed === false) {
+            } else if (userData.referredBy && hasClaimedBonus === false) {
                 // User has applied referral code but not claimed bonus
                 console.log('Showing referrer info section');
                 showReferrerInfoSection(userData.referredBy);
@@ -805,13 +898,13 @@
             if (!userData) return;
 
             try {
-                // Try to get referral data from Firestore
-                const referralDoc = await db.collection("referrals").doc(userData.uid).get();
-                if (referralDoc.exists) {
-                    const referralData = referralDoc.data();
+                // Try to get referral data from refEarnCounter collection
+                const refEarnDoc = await db.collection("Referrals").doc("refEarnCounter").collection("users").doc(userData.uid).get();
+                if (refEarnDoc.exists) {
+                    const refEarnData = refEarnDoc.data();
                     
-                    totalReferralsEl.textContent = referralData.totalReferrals || 0;
-                    const earnings = (referralData.totalReferrals || 0) * (appConfig.referrerBonus || 100);
+                    totalReferralsEl.textContent = userData.refUserData?.totalReferrals || 0;
+                    const earnings = refEarnData.totalEarnings || 0;
                     referralEarningsEl.textContent = earnings;
                 } else {
                     // Use user data if Firestore fails
@@ -948,15 +1041,21 @@
         // Apply referral code to user profile
         async function applyReferralCode(referrerUid) {
             try {
-                // Update user data in Firebase
+                // Update user data in Firebase users collection
                 await db.collection("users").doc(userData.uid).update({
-                    referredBy: referrerUid,
+                    referredBy: referrerUid
+                });
+                
+                // Update refBonus collection
+                await db.collection("Referrals").doc("refBonus").collection("users").doc(userData.uid).update({
                     referralBonusClaimed: false
                 });
                 
                 // Update local user data
                 userData.referredBy = referrerUid;
-                userData.referralBonusClaimed = false;
+                if (userData.refBonusData) {
+                    userData.refBonusData.referralBonusClaimed = false;
+                }
                 
                 // Update UI
                 updateReferralUI();
@@ -971,20 +1070,28 @@
 
         // Clear referral code (only works if bonus not claimed)
         async function clearReferralCode() {
-            if (userData.referralBonusClaimed) {
+            const hasClaimedBonus = userData.refBonusData?.referralBonusClaimed || userData.referralBonusClaimed;
+            
+            if (hasClaimedBonus) {
                 return showAlert('আপনি ইতিমধ্যেই বোনাস ক্লেইম করেছেন। রেফারেল কোড ক্লিয়ার করা যাবে না।');
             }
             
             try {
                 // Update user data in Firebase
                 await db.collection("users").doc(userData.uid).update({
-                    referredBy: null,
+                    referredBy: null
+                });
+                
+                // Update refBonus collection
+                await db.collection("Referrals").doc("refBonus").collection("users").doc(userData.uid).update({
                     referralBonusClaimed: null
                 });
                 
                 // Update local user data
                 userData.referredBy = null;
-                userData.referralBonusClaimed = null;
+                if (userData.refBonusData) {
+                    userData.refBonusData.referralBonusClaimed = null;
+                }
                 
                 // Update UI
                 updateReferralUI();
@@ -1003,7 +1110,8 @@
                 return showAlert('রেফারেল কোড প্রয়োগ করা নেই।');
             }
             
-            if (userData.referralBonusClaimed) {
+            const hasClaimedBonus = userData.refBonusData?.referralBonusClaimed || userData.referralBonusClaimed;
+            if (hasClaimedBonus) {
                 return showAlert('আপনি ইতিমধ্যেই রেফারেল বোনাস ক্লেইম করেছেন।');
             }
             
@@ -1014,29 +1122,48 @@
                 const bonusAmount = appConfig.referralBonus || 100;
                 const referrerBonusAmount = appConfig.referrerBonus || 100;
                 
-                // Update user balance and mark as claimed (PERMANENT)
+                // Update user balance and mark as claimed (PERMANENT) in users collection
                 await db.collection("users").doc(userData.uid).update({
                     balance: firebase.firestore.FieldValue.increment(bonusAmount),
                     totalEarned: firebase.firestore.FieldValue.increment(bonusAmount),
                     referralBonusClaimed: true // PERMANENT - cannot be changed back
                 });
                 
+                // Update refBonus collection (PERMANENT)
+                await db.collection("Referrals").doc("refBonus").collection("users").doc(userData.uid).update({
+                    referralBonusClaimed: true
+                });
+                
+                // Update userBalance collection
+                await db.collection("userBalance").doc(userData.uid).update({
+                    mainBalance: firebase.firestore.FieldValue.increment(bonusAmount)
+                });
+                
                 // Update referrer's data
-                await db.collection("referrals").doc(userData.referredBy).update({
+                await db.collection("Referrals").doc("refUser").collection("users").doc(userData.referredBy).update({
                     totalReferrals: firebase.firestore.FieldValue.increment(1),
-                    totalEarnings: firebase.firestore.FieldValue.increment(referrerBonusAmount),
                     referredUsers: firebase.firestore.FieldValue.arrayUnion(userData.uid)
                 });
                 
-                await db.collection("users").doc(userData.referredBy).update({
-                    balance: firebase.firestore.FieldValue.increment(referrerBonusAmount),
+                await db.collection("Referrals").doc("refEarnCounter").collection("users").doc(userData.referredBy).update({
+                    totalEarnings: firebase.firestore.FieldValue.increment(referrerBonusAmount),
                     totalEarned: firebase.firestore.FieldValue.increment(referrerBonusAmount)
+                });
+                
+                await db.collection("userBalance").doc(userData.referredBy).update({
+                    mainBalance: firebase.firestore.FieldValue.increment(referrerBonusAmount)
                 });
                 
                 // Update local user data
                 userData.balance += bonusAmount;
                 userData.totalEarned += bonusAmount;
                 userData.referralBonusClaimed = true; // PERMANENT
+                if (userData.refBonusData) {
+                    userData.refBonusData.referralBonusClaimed = true;
+                }
+                
+                // Send Telegram notifications
+                await sendReferralNotifications(userData.referredBy, userData.uid, bonusAmount, referrerBonusAmount);
                 
                 // Update UI
                 updateReferralUI();
@@ -1052,6 +1179,41 @@
             } catch (error) {
                 console.error('Error claiming referral bonus:', error);
                 showAlert('বোনাস ক্লেইম করতে সমস্যা হয়েছে। আবার চেষ্টা করুন।');
+            }
+        }
+
+        // Send referral notifications to both users
+        async function sendReferralNotifications(referrerUid, referredUserUid, bonusAmount, referrerBonusAmount) {
+            try {
+                // Get referrer data
+                const referrerDoc = await db.collection("users").doc(referrerUid).get();
+                const referredUserDoc = await db.collection("users").doc(referredUserUid).get();
+                
+                if (referrerDoc.exists && referredUserDoc.exists) {
+                    const referrerData = referrerDoc.data();
+                    const referredUserData = referredUserDoc.data();
+                    
+                    const referrerName = referrerData.telegramData?.first_name + (referrerData.telegramData?.last_name ? ' ' + referrerData.telegramData.last_name : '');
+                    const referredUserName = referredUserData.telegramData?.first_name + (referredUserData.telegramData?.last_name ? ' ' + referredUserData.telegramData.last_name : '');
+                    
+                    // Notification for referrer
+                    const referrerMessage = `🎉 <b>রেফারেল বোনাস!</b>\n\n` +
+                                          `আপনি <b>${referredUserName}</b> কে রেফার করেছেন এবং <b>${referrerBonusAmount} ef</b> বোনাস পেয়েছেন!\n\n` +
+                                          `মোট রেফারেল: ${(referrerData.refUserData?.totalReferrals || 0) + 1}`;
+                    
+                    // Notification for referred user
+                    const referredUserMessage = `🎉 <b>রেফারেল বোনাস!</b>\n\n` +
+                                              `আপনি <b>${referrerName}</b> এর দ্বারা রেফার হয়েছেন এবং <b>${bonusAmount} ef</b> বোনাস পেয়েছেন!\n\n` +
+                                              `আপনার রেফারেল বোনাস সফলভাবে ক্লেইম হয়েছে।`;
+                    
+                    // Send notifications
+                    await sendTelegramNotification(referrerUid, referrerMessage);
+                    await sendTelegramNotification(referredUserUid, referredUserMessage);
+                    
+                    console.log('Referral notifications sent successfully');
+                }
+            } catch (error) {
+                console.error('Error sending referral notifications:', error);
             }
         }
 
